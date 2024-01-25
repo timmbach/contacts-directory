@@ -1,7 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const Contact = require("../models/contacts.js");
-const { addContact } = require("../controllers/contact.controller.js");
+
+const {
+  addContact,
+  getAllContacts,
+  viewContact,
+} = require("../controllers/contact.controller.js");
+
 const multer = require("multer");
 
 // image upload
@@ -19,6 +24,7 @@ let storage = multer.diskStorage({
 let upload = multer({
   storage: storage,
 }).single("image");
+
 
 router.post("/add", upload, addContact);
 
@@ -43,8 +49,7 @@ router.post("/add", upload, addContact);
 //   });
 // }
 
-router.get("/", (req, res) => {
-  res.send("All Contacts");
-});
+router.get("/", getAllContacts);
+router.get("/:id", viewContact);
 
 module.exports = router;

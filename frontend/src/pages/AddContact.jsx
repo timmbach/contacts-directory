@@ -49,6 +49,7 @@ function AddContact() {
             <div className="card-header bg-primary">
               <h3 className="text-light">Add New Contact</h3>
             </div>
+
             <div className="card-body p-4">
               <form method="post" id="add-form" onSubmit={handleSubmit}>
                 <div className="mb-3">

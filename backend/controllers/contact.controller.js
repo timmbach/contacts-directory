@@ -1,9 +1,17 @@
 const Contact = require("../models/contacts.js");
+
 const errorHandler = require("../utils/error.js");
 
 const addContact = async (req, res, next) => {
+  const contactBody = new Contact({
+    name: req.body.name,
+    email: req.body.email,
+    phone: req.body.phone,
+    image: req.file.filename,
+    viewCount: req.body.viewCount,
+  });
   try {
-    const contact = await Contact.create(req.body);
+    const contact = await Contact.create(contactBody);
     return res.status(201).json(contact);
   } catch (error) {
     next(error);
@@ -17,12 +25,11 @@ const viewContact = async (req, res, next) => {
   }
 
   try {
-    const viewedContact = await Contact.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    res.status(200).json(viewedContact);
+    const contact = await Contact.findById(req.params.id);
+    if (!contact) {
+      return next(errorHandler(404, "Contact not found"));
+    }
+    res.status(200).json(contact);
   } catch (error) {
     next(error);
   }
@@ -30,51 +37,9 @@ const viewContact = async (req, res, next) => {
 
 const getAllContacts = async (req, res, next) => {
   try {
-    const limit = parseInt(req.query.limit) || 9;
-    const startIndex = req.query.startIndex || 0;
+    const contacts = await Contact.find();
 
-    let underOffer = req.query.underOffer;
-
-    if (underOffer === undefined || underOffer === "false") {
-      underOffer = { $in: [false, true] };
-    }
-
-    let furnished = req.query.furnished;
-
-    if (furnished === undefined || furnished === "false") {
-      furnished = { $in: [false, true] };
-    }
-
-    let parking = req.query.parking;
-
-    if (parking === undefined || parking === "false") {
-      parking = { $in: [false, true] };
-    }
-
-    let purchaseType = req.query.purchaseType;
-
-    if (purchaseType === undefined || purchaseType === "all") {
-      purchaseType = { $in: ["sale", "rent"] };
-    }
-
-    const searchTerm = req.query.searchTerm || "";
-    const sort = req.query.sort || "createdAt";
-    const order = req.query.order || "desc";
-
-    const listings = await Listing.find({
-      name: { $regex: searchTerm, $options: "i" },
-      underOffer,
-      furnished,
-      parking,
-      purchaseType,
-    })
-      .sort({
-        [sort]: order,
-      })
-      .limit(limit)
-      .skip(startIndex);
-
-    res.status(200).json(listings);
+    res.status(200).json(contacts);
   } catch (error) {
     next(error);
   }
